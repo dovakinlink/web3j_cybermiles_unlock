@@ -15,4 +15,39 @@ Cybermiles推出了抢币活动，具体规则是官方创建10个以太坊账�
 要查询某个以太坊代币的合约地址，我们可以去https://etherscan.io/ 搜索代币名称即可，具体方法是
 1：进入代币合约地址界面
 2：点击Code标签
-3：找到Contract ABI
+3：找到Contract Source Code，复制并保存到本地，格式为.sol(本例子中保存为 cybermiles.sol)
+
+通过solc编译合约代码，生成对应的bin和abi
+
+```java (type)
+solcjs cybermiles.sol  --bin --abi --optimize -o ./cybermiles
+```
+之后，在生成的cybermiles文件夹中，可以看到很多文件，我们只需要子类生成的bin和abi就好，即：
+
+```
+cybermiles_sol_CyberMilesToken.bin
+cybermiles_sol_CyberMilesToken.abi
+```
+
+然后通过web3j命令行工具，生成对应的java wrapper code：
+
+```
+web3j solidity generate --javaTypes cybermiles_sol_CyberMilesToken.bin cybermiles_sol_CyberMilesToken.abi -o Cybermiles_sol_CyberMilesToken.java -p link.dovakin
+```
+
+如果一切顺利的话，当前目录中会出现link->dovakin->Cybermiles_sol_CyberMilesToken.java的目录结构，当然 -p 后的包名参数可以自行更改
+
+以上是Cybermiles代币合约java代理类的生成过程，后续会用到，项目中为了方便本地私有链测试，提供了简单的ERC20代币合约，并基于该合约进行编写
+
+# 第二步：基于web3j编写解锁转账代码
+
+详细代码可以参考项目里UnlockAndTransfer.java的实现
+
+# 第三步：本地私有链测试
+
+1：首先编译本项目代码（基于Maven）
+2：启动私有链，并创建至少两个账户(一个为合约创建者账户，剩下的为测试账户)
+3：部署项目中的合约（MyToken.sol）
+4：更改UnlockAndTransfer.java中的相关变量值
+5：执行UnlockAndTransfer.java
+
